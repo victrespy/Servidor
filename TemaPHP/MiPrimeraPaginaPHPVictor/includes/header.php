@@ -1,29 +1,18 @@
 <header>
-    <div class="nav">
-        <div class="container">
-            <div class="btn">Home</div>
-            <div class="btn">Contact</div>
-            <div class="btn">About</div>
-            <div class="btn">Services</div>
-            <svg
-                class="outline"
-                overflow="visible"
-                width="400"
-                height="60"
-                viewBox="0 0 400 60"
-                xmlns="http://www.w3.org/2000/svg"
-            >
-                <rect
-                    class="rect"
-                    pathLength="100"
-                    x="0"
-                    y="0"
-                    width="400"
-                    height="60"
-                    fill="transparent"
-                    stroke-width="5"
-                ></rect>
-            </svg>
-        </div>
-    </div>
+    <nav>
+        <ul>
+            <li>
+                <a href="?page=home">Home</a>
+            </li>
+            <li>
+                <a href="?page=about">About</a>
+            </li>
+            <li>
+                <a href="?page=contact">Contact</a>
+            </li>
+            <li>
+                <a href="?page=services">Services</a>
+            </li>
+        </ul>
+    </nav>
 </header>
