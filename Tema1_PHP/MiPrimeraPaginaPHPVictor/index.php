@@ -1,24 +1,7 @@
 <?php
 require_once './config/config.php';
 
-// Obtener la página solicitada
-$page = $_GET['page'] ?? 'home';
-// Lista de páginas válidas
-$valid_pages = ['home', 'about', 'services', 'contact'];
-// Verificar si la página es válida
-if (!in_array($page, $valid_pages)) {
-    $page = '404';
-}
-// Configurar título dinámico
-$page_titles = [
-        'home' => 'Inicio - Mi Sitio Web',
-        'about' => 'Sobre Nosotros - Mi Sitio Web',
-        'services' => 'Servicios - Mi Sitio Web',
-        'contact' => 'Contacto - Mi Sitio Web',
-        '404' => 'Página no encontrada - Mi Sitio Web'
-];
 
-$page_title = $page_titles[$page] ?? 'Mi Sitio Web';
 
 ?>
 <!doctype html>

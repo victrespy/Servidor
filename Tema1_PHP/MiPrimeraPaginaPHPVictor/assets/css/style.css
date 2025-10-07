@@ -36,7 +36,7 @@ nav ul{
 }
 
 /*HOME*/
-.home{
+main{
     background-color: #bef6;
     width: 80%;
     margin: auto;
@@ -50,6 +50,10 @@ nav ul{
 }
 h1{
     margin-bottom: 20px;
+}
+
+form{
+    margin: 20px 0;
 }
 
 /*FOOTER*/
