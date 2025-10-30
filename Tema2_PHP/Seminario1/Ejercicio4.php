@@ -9,47 +9,38 @@ function esPalindromo($texto) {
     }
 
     // Comprobar si es una cadena de texto
-    if (!is_string($texto)) {
+    if ((int)$texto != 0) {
         return "Error: El valor proporcionado no es una cadena de texto";
     }
 
-    // Convertir a minúsculas y eliminar espacios, acentos y caracteres especiales
+    //Comprobar si la cadena tiene numeros
+    for ($i = 0; $i < strlen($texto); $i++) {
+        if (is_numeric($texto[$i])) {
+            return "Error: La cadena no debe contener números";
+        }
+    }
+
+    // Convertir a minúsculas y eliminar espacios y acentos
     $texto = strtolower($texto);
     $texto = trim($texto);
     $texto = str_replace(' ', '', $texto);
     $texto = str_replace(['á','é','í','ó','ú'], ['a','e','i','o','u'], $texto);
-    $texto = preg_replace('/[^a-z0-9]/', '', $texto);
 
-    // Si después de limpiar el texto está vacío
-    if (empty($texto)) {
-        return "Error: El texto solo contiene caracteres especiales";
-    }
+
 
     // Comparar el texto con su versión invertida
     return $texto === strrev($texto);
 }
 
-// Ejemplos de uso
-$pruebas = [
-    "ana",                      // Palíndromo simple
-    "Anita lava la tina",      // Palíndromo con espacios
-    "No es palíndromo",        // No es palíndromo
-    "Ána",                     // Palíndromo con acento
-    "A man, a plan, a canal: Panama!", // Palíndromo con caracteres especiales
-    "",                        // Cadena vacía
-    null,                      // Null
-    123,                       // Número
-];
-
-foreach ($pruebas as $prueba) {
-    $resultado = esPalindromo($prueba);
-    $textoMostrar = is_null($prueba) ? "null" : (is_string($prueba) ? "'$prueba'" : $prueba);
-    echo "Texto: $textoMostrar -> ";
-    if (is_bool($resultado)) {
-        echo $resultado ? "Es palíndromo" : "No es palíndromo";
-    } else {
-        echo $resultado;
-    }
-    echo "\n";
+//Pruebas
+echo "Introduce una cadena de texto para comprobar si es un palíndromo:\n";
+echo "> ";
+$texto = readline();
+if(esPalindromo($texto) === true) {
+    echo "La cadena '$texto' es un palíndromo.\n";
+} elseif (esPalindromo($texto) === false) {
+    echo "La cadena '$texto' no es un palíndromo.\n";
+} else {
+    echo esPalindromo($texto) . "\n";
 }
 ?>

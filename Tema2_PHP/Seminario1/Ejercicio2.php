@@ -12,7 +12,7 @@ function sumatoriaArray(array $numeros) {
         if (is_numeric($numero)) {
             $suma += $numero;
         } else {
-            echo "Illo tiooo, no metas palabras anda. La palabra $numero no se va a sumar. \n";
+            echo "Illo tiooo, no metas palabras anda. La palabra $numero no se va a sumar.\n";
         }
     }
     return $suma;
