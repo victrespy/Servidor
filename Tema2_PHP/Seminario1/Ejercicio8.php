@@ -13,7 +13,7 @@ function sumarDigitos($numero) {
     }
 
     // Convertir el número a cadena para iterar sobre cada dígito
-    $numeroStr = strval($numero);
+    $numeroStr = (string)($numero);
     $suma = 0;
 
     // Sumar cada dígito
