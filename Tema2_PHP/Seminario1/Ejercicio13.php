@@ -41,7 +41,7 @@ function emmetToHtml($emmet) {
 //Pruebas
 echo "Introduce una cadena Emmet:\n";
 echo "> ";
-$emmetInput = readline();
-$resultado = emmetToHtml($emmetInput);
+$textoEmmet = readline();
+$resultado = emmetToHtml($textoEmmet);
 echo $resultado . "\n";
 ?>

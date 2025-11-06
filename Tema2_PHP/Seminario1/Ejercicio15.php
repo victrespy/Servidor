@@ -23,12 +23,12 @@ function compararArrays($array1, $array2) {
 //Pruebas
 echo "Introduce los elementos del primer array separados por comas:\n";
 echo "> ";
-$input1 = readline();
-$array1 = explode(',', $input1);
+$array1 = readline();
+$array1 = explode(',', $array1);
 echo "Introduce los elementos del segundo array separados por comas:\n";
 echo "> ";
-$input2 = readline();
-$array2 = explode(',', $input2);
+$array2 = readline();
+$array2 = explode(',', $array2);
 $resultado = compararArrays($array1, $array2);
 if(is_string($resultado)) {
     echo $resultado . "\n";

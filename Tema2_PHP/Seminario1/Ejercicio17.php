@@ -19,8 +19,8 @@ function filtrarPares($array) {
 //Pruebas
 echo "Introduce los elementos del array separados por comas:\n";
 echo "> ";
-$input = readline();
-$array = explode(',', $input);
+$array = readline();
+$array = explode(',', $array);
 $resultado = filtrarPares($array);
 if(is_string($resultado)) {
     echo $resultado . "\n";
