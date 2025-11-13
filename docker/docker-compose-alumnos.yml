@@ -1,8 +1,9 @@
 services:
   # Servidor web con PHP
   web:
-    image: php:8.3-apache
-    container_name: php_web
+    build:
+      context: ./docker
+      dockerfile: Dockerfile-php-alumnos
     ports:
       - "8080:80"
     volumes:
@@ -15,7 +16,6 @@ services:
   # Base de datos MariaDB
   db:
     image: mariadb:10.11
-    container_name: mariadb
     ports:
       - "3306:3306"
     environment:
@@ -31,7 +31,6 @@ services:
   # phpMyAdmin para gestión visual de la BD
   phpmyadmin:
     image: phpmyadmin:latest
-    container_name: phpmyadmin
     ports:
       - "8081:80"
     environment:
