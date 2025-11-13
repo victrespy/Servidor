@@ -5,7 +5,7 @@ services:
       context: ./docker
       dockerfile: Dockerfile-php-alumnos
     ports:
-      - "8080:80"
+      - "8087:80"
     volumes:
       - ./proyecto:/var/www/html
     networks:
@@ -17,7 +17,7 @@ services:
   db:
     image: mariadb:10.11
     ports:
-      - "3306:3306"
+      - "3369:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: testdb
@@ -32,7 +32,7 @@ services:
   phpmyadmin:
     image: phpmyadmin:latest
     ports:
-      - "8081:80"
+      - "8089:80"
     environment:
       PMA_HOST: db
       PMA_PORT: 3306
