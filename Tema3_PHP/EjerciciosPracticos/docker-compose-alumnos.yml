@@ -20,7 +20,7 @@ services:
       - "3369:3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: testdb
+      MYSQL_DATABASE: tienda_frutas
       MYSQL_USER: alumno
       MYSQL_PASSWORD: alumno
     volumes:
