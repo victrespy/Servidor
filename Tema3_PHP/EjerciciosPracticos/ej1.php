@@ -78,9 +78,36 @@
                     id INT AUTO_INCREMENT PRIMARY KEY,
                     nombre VARCHAR(100) NOT NULL,
                     email VARCHAR(100) NOT NULL,
-                    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                    contraseña VARCHAR(255) NOT NULL,
                 )
             ");
+
+        $pdo -> exec("
+            CREATE TABLE IF NOT EXISTS categorias (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nombre VARCHAR(100) NOT NULL,
+                descripcion TEXT
+            )
+        ");
+        $pdo -> exec("
+            CREATE TABLE IF NOT EXISTS productos (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                nombre VARCHAR(100) NOT NULL,
+                categoria_id INT,
+                precio DECIMAL(10,2) NOT NULL,
+                stock INT NOT NULL,
+                FOREIGN KEY (categoria_id) REFERENCES categorias(id)
+            )
+        ");
+        $pdo -> exec("
+            CREATE TABLE IF NOT EXISTS pedidos (
+                id INT AUTO_INCREMENT PRIMARY KEY,
+                usuario_id INT,
+                fecha_pedido TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                total DECIMAL(10,2) NOT NULL,
+                FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
+            )
+        ");
 
         // Insertar datos de ejemplo si la tabla está vacía
         $count = $pdo->query("SELECT COUNT(*) FROM usuarios")->fetchColumn();
