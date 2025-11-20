@@ -107,7 +107,7 @@
             )
         ");
             
-            // Insertar datos de ejemplo si la tabla está vacía
+            // EJERCICIO 2: INSERTAR DATOS
             $count = $pdo->query("SELECT COUNT(*) FROM usuarios")->fetchColumn();
             if ($count == 0) {
                 $pdo->exec("
@@ -117,6 +117,29 @@
                     ('Carlos López', 'carlos@ejemplo.com')
                 ");
                 echo "<p class='success'>✅ Datos de ejemplo insertados</p>";
+            }
+
+            $count = $pdo->query("SELECT COUNT(*) FROM categorias")->fetchColumn();
+            if ($count == 0) {
+                $pdo->exec("
+                    INSERT INTO categorias (nombre) VALUES 
+                    ('Citricos'),
+                    ('Frutas Rojas'),
+                    ('Tropicales')
+                ");
+            }
+
+            $count = $pdo->query("SELECT COUNT(*) FROM productos")->fetchColumn();
+            if ($count == 0) {
+                $pdo->exec("
+                    INSERT INTO productos (nombre, categoria_id, precio, stock) VALUES 
+                    ('Naranja', 1, 0.50, 100),
+                    ('Fresa', 2, 1.20, 50),
+                    ('Mango', 3, 1.50, 30),
+                    ('Limón', 1, 0.30, 80),
+                    ('Cereza', 2, 2.00, 20),
+                    ('Piña', 3, 1.80, 25)
+                ");
             }
             
             // Mostrar usuarios
@@ -144,6 +167,49 @@
                 
                 echo "</table>";
             }
+
+            //EJERCICIO 3: CONSULTAS
+            //a) productos ordenados por precio ascendente
+            echo "<h3>a) Productos por precio (Menor a Mayor)</h3>";
+            $stmt = $pdo->prepare("SELECT * FROM productos ORDER BY precio ASC");
+            $stmt->execute();
+            $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($resultados as $p) {
+                echo "{$p['nombre']} - {$p['precio']}€<br>";
+            }
+
+            //b) productos con una categoría específica
+            echo "<h3>b) Productos de categoría: Cítricos (ID 1)</h3>";
+            $categoriaBuscada = 1; // Ejemplo
+
+            $stmt = $pdo->prepare("SELECT * FROM productos WHERE categoria_id = :cat_id");
+            $stmt->execute([':cat_id' => $categoriaBuscada]);
+            $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($resultados as $p) {
+                echo "{$p['nombre']}<br>";
+            }
+
+            //c) productos con stock menor que 30 (porque no tengo ninguno con stock < 20)
+            echo "<h3>c) Productos con stock bajo (< 30)</h3>";
+            $limiteStock = 30;
+
+            $stmt = $pdo->prepare("SELECT * FROM productos WHERE stock < :limite");
+            $stmt->execute([':limite' => $limiteStock]);
+            $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+            foreach ($resultados as $p) {
+                echo "{$p['nombre']} (Stock: {$p['stock']})<br>";
+            }
+
+            //d) contar el número total de productos
+            echo "<h3>d) Total de productos</h3>";
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM productos");
+            $stmt->execute();
+            $total = $stmt->fetchColumn();
+
+            echo "Total en inventario: $total productos";
             
         } catch(PDOException $e) {
             echo "<p class='error'>❌ Error de conexión: " . $e->getMessage() . "</p>";
