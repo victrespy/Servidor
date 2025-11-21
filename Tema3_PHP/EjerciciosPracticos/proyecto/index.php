@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -12,30 +13,36 @@
             padding: 20px;
             background: #f5f5f5;
         }
+
         .card {
             background: white;
             padding: 30px;
             border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
             margin-bottom: 20px;
         }
+
         h1 {
             color: #333;
         }
+
         .success {
             color: #28a745;
             font-weight: bold;
         }
+
         .error {
             color: #dc3545;
             font-weight: bold;
         }
+
         code {
             background: #f4f4f4;
             padding: 2px 6px;
             border-radius: 3px;
             font-family: monospace;
         }
+
         .info {
             background: #e3f2fd;
             padding: 15px;
@@ -44,33 +51,34 @@
         }
     </style>
 </head>
+
 <body>
     <div class="card">
         <h1>🚀 Entorno PHP + MariaDB</h1>
-        
+
         <?php
         // Información de PHP
         echo "<h2>📦 Versión de PHP</h2>";
         echo "<p class='info'>PHP " . phpversion() . "</p>";
-        
+
         // Conexión a la base de datos
         echo "<h2>🔌 Conexión a MariaDB</h2>";
-        
+
         $host = 'db';  // Nombre del servicio en docker-compose
         $dbname = 'tienda_frutas';
         $username = 'alumno';
         $password = 'alumno';
-        
+
         try {
             $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8mb4", $username, $password);
             $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-            
+
             echo "<p class='success'>✅ Conexión exitosa a la base de datos</p>";
-            
+
             // Obtener versión de MariaDB
             $version = $pdo->query('SELECT VERSION()')->fetchColumn();
             echo "<p class='info'>MariaDB versión: $version</p>";
-            
+
             // EJERCICIO 1: CREAR TABLAS
             $pdo->exec("
                 CREATE TABLE IF NOT EXISTS usuarios (
@@ -80,14 +88,14 @@
                     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
                 )
             ");
-            $pdo -> exec("
+            $pdo->exec("
             CREATE TABLE IF NOT EXISTS categorias (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 nombre VARCHAR(100) NOT NULL,
                 descripcion TEXT
             )
         ");
-            $pdo -> exec("
+            $pdo->exec("
             CREATE TABLE IF NOT EXISTS productos (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 nombre VARCHAR(100) NOT NULL,
@@ -97,7 +105,7 @@
                 FOREIGN KEY (categoria_id) REFERENCES categorias(id)
             )
         ");
-            $pdo -> exec("
+            $pdo->exec("
             CREATE TABLE IF NOT EXISTS pedidos (
                 id INT AUTO_INCREMENT PRIMARY KEY,
                 usuario_id INT,
@@ -106,7 +114,7 @@
                 FOREIGN KEY (usuario_id) REFERENCES usuarios(id)
             )
         ");
-            
+
             // EJERCICIO 2: INSERTAR DATOS
             $count = $pdo->query("SELECT COUNT(*) FROM usuarios")->fetchColumn();
             if ($count == 0) {
@@ -141,12 +149,12 @@
                     ('Piña', 3, 1.80, 25)
                 ");
             }
-            
+
             // Mostrar usuarios
             echo "<h2>👥 Usuarios en la base de datos</h2>";
             $stmt = $pdo->query("SELECT * FROM usuarios ORDER BY id");
             $usuarios = $stmt->fetchAll(PDO::FETCH_ASSOC);
-            
+
             if (count($usuarios) > 0) {
                 echo "<table style='width: 100%; border-collapse: collapse;'>";
                 echo "<tr style='background: #f4f4f4;'>";
@@ -155,7 +163,7 @@
                 echo "<th style='padding: 10px; border: 1px solid #ddd;'>Email</th>";
                 echo "<th style='padding: 10px; border: 1px solid #ddd;'>Fecha Registro</th>";
                 echo "</tr>";
-                
+
                 foreach ($usuarios as $usuario) {
                     echo "<tr>";
                     echo "<td style='padding: 10px; border: 1px solid #ddd;'>{$usuario['id']}</td>";
@@ -164,12 +172,13 @@
                     echo "<td style='padding: 10px; border: 1px solid #ddd;'>{$usuario['fecha_registro']}</td>";
                     echo "</tr>";
                 }
-                
+
                 echo "</table>";
             }
 
             //EJERCICIO 3: CONSULTAS
             //a) productos ordenados por precio ascendente
+            echo "<h2>EJERCICIO 3</h2>";
             echo "<h3>a) Productos por precio (Menor a Mayor)</h3>";
             $stmt = $pdo->prepare("SELECT * FROM productos ORDER BY precio ASC");
             $stmt->execute();
@@ -182,7 +191,7 @@
             //b) productos con una categoría específica
             echo "<h3>b) Productos de categoría: Cítricos (ID 1)</h3>";
             $categoriaBuscada = 1; // Ejemplo
-
+        
             $stmt = $pdo->prepare("SELECT * FROM productos WHERE categoria_id = :cat_id");
             $stmt->execute([':cat_id' => $categoriaBuscada]);
             $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -210,8 +219,11 @@
             $total = $stmt->fetchColumn();
 
             echo "Total en inventario: $total productos";
-            
-        } catch(PDOException $e) {
+
+
+            //EJERCICIO 4: INNER JOIN
+        
+        } catch (PDOException $e) {
             echo "<p class='error'>❌ Error de conexión: " . $e->getMessage() . "</p>";
             echo "<div class='info'>";
             echo "<strong>Verifica que:</strong><br>";
@@ -221,10 +233,11 @@
             echo "</div>";
         }
         ?>
-        
+
         <h2>🔗 Enlaces Útiles</h2>
         <div class="info">
-            <p><strong>phpMyAdmin:</strong> <a href="http://localhost:8081" target="_blank">http://localhost:8081</a></p>
+            <p><strong>phpMyAdmin:</strong> <a href="http://localhost:8081" target="_blank">http://localhost:8081</a>
+            </p>
             <p><strong>Credenciales BD:</strong></p>
             <ul>
                 <li>Usuario: <code>alumno</code></li>
@@ -234,4 +247,5 @@
         </div>
     </div>
 </body>
+
 </html>
