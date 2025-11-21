@@ -282,7 +282,7 @@
                 echo "<p>El producto no existe.</p>";
             }
 
-            // EJERCICIO 6: SOFT DELETE
+            // EJERCICIO 6: SOFT DELETE khe
             echo "<h2>EJERCICIO 6: Eliminar productos</h2>";
 
             // PASO 1: Alterar la tabla para añadir la bandera 'eliminado'
