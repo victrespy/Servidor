@@ -180,7 +180,7 @@
             //a) productos ordenados por precio ascendente
             echo "<h2>EJERCICIO 3</h2>";
             echo "<h3>a) Productos por precio (Menor a Mayor)</h3>";
-            $stmt = $pdo->prepare("SELECT * FROM productos ORDER BY precio ASC");
+            $stmt = $pdo->prepare("SELECT * FROM productos WHERE eliminado = 0 ORDER BY precio ASC");
             $stmt->execute();
             $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -192,7 +192,7 @@
             echo "<h3>b) Productos de categoría: Cítricos (ID 1)</h3>";
             $categoriaBuscada = 1; // Ejemplo
         
-            $stmt = $pdo->prepare("SELECT * FROM productos WHERE categoria_id = :cat_id");
+            $stmt = $pdo->prepare("SELECT * FROM productos WHERE categoria_id = :cat_id AND eliminado = 0");
             $stmt->execute([':cat_id' => $categoriaBuscada]);
             $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -204,7 +204,7 @@
             echo "<h3>c) Productos con stock bajo (< 30)</h3>";
             $limiteStock = 30;
 
-            $stmt = $pdo->prepare("SELECT * FROM productos WHERE stock < $limiteStock");
+            $stmt = $pdo->prepare("SELECT * FROM productos WHERE stock < $limiteStock AND eliminado = 0");
             $stmt->execute();
             $resultados = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
@@ -214,7 +214,7 @@
 
             //d) contar el número total de productos
             echo "<h3>d) Total de productos</h3>";
-            $stmt = $pdo->prepare("SELECT COUNT(*) FROM productos");
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM productos WHERE eliminado = 0");
             $stmt->execute();
             $total = $stmt->fetchColumn();
 
@@ -227,6 +227,7 @@
             $sql = "SELECT p.nombre AS producto, p.precio, c.nombre AS categoria 
                     FROM productos p 
                     INNER JOIN categorias c ON p.categoria_id = c.id 
+                    WHERE p.eliminado = 0
                     ORDER BY c.nombre ASC, p.precio ASC";
 
             $stmt = $pdo->query($sql);
@@ -255,7 +256,7 @@
             // b) y c) Reducir stock con validación
             echo "<h3>b) y c) Compra de producto (Reducir Stock)</h3>";
 
-            $producto_compra_id = 7; // Naranja
+            $producto_compra_id = 1; // Naranja
             $cantidad_compra = 5;
 
             // ver stock actual 
@@ -282,46 +283,155 @@
                 echo "<p>El producto no existe.</p>";
             }
 
-            // EJERCICIO 6: SOFT DELETE khe
+            // EJERCICIO 6: SOFT DELETE
             echo "<h2>EJERCICIO 6: Eliminar productos</h2>";
 
-            // PASO 1: Alterar la tabla para añadir la bandera 'eliminado'
-            // Usamos 'IF NOT EXISTS' para que no de error si recargas la página
-            try {
-                $pdo->exec("ALTER TABLE productos ADD COLUMN IF NOT EXISTS eliminado BOOLEAN DEFAULT 0");
-                echo "<p class='info'>ℹ️ Estructura de tabla actualizada (columna 'eliminado').</p>";
-            } catch (PDOException $e) {
-                // Si la versión de MariaDB es antigua y no soporta IF NOT EXISTS, capturamos el error silenciosamente
-            }
+            // he usado el if not exist por si acaso se recarga la página
+            $pdo->exec("ALTER TABLE productos ADD COLUMN IF NOT EXISTS eliminado BOOLEAN DEFAULT 0");
 
-            // PASO 2: Realizar el Soft Delete (Update en lugar de Delete)
-            // Marcamos como eliminados (1) los productos que tengan stock 0
+            // ahora los productos que no tengan stock se marcan como eliminados
             $sql_soft_delete = "UPDATE productos SET eliminado = 1 WHERE stock = 0";
             $stmt = $pdo->prepare($sql_soft_delete);
             $stmt->execute();
 
-            if ($stmt->rowCount() > 0) {
-                echo "<p class='success'>✅ Se han eliminado (soft delete) " . $stmt->rowCount() . " productos sin stock.</p>";
-            } else {
-                echo "<p class='info'>ℹ️ No hay productos con stock 0 para eliminar.</p>";
+            echo "<p> Productos sin stock marcados como eliminados.</p>";
+
+            //EJERCICIO 7: SIMULACION DE COMPRA
+            echo "<h2>EJERCICIO 7: Simulación de Compra</h2>";
+
+            // Datos de la simulación
+            $id_usuario = 1;
+            $id_producto = 2;
+            $cantidad_compra = 10;
+
+            try {
+                $pdo->beginTransaction();
+
+                //comprobar que el usuario existe
+                $stmtUser = $pdo->prepare("SELECT id FROM usuarios WHERE id = :id");
+                $stmtUser->execute([':id' => $id_usuario]);
+                if (!$stmtUser->fetch()) {
+                    throw new Exception("El usuario no existe.");
+                }
+
+                //comprobar que el producto existe y tiene stock
+                $stmtProd = $pdo->prepare("SELECT id, nombre, precio, stock FROM productos WHERE id = :id AND eliminado = 0 FOR UPDATE");
+                $stmtProd->execute([':id' => $id_producto]);
+                $producto = $stmtProd->fetch(PDO::FETCH_ASSOC);
+
+                if (!$producto) {
+                    throw new Exception("Producto no encontrado.");
+                }
+
+                if ($producto['stock'] < $cantidad_compra) {
+                    throw new Exception("Stock insuficiente");
+                }
+
+                // calculo el precio total
+                $total_pedido = $producto['precio'] * $cantidad_compra;
+
+
+                $stmtUpdate = $pdo->prepare("UPDATE productos SET stock = stock - :cant WHERE id = :id");
+                $stmtUpdate->execute([':cant' => $cantidad_compra, ':id' => $id_producto]);
+
+                //creamos el pedido y confirmamos cambios
+                $stmtPedido = $pdo->prepare("INSERT INTO pedidos (usuario_id, total) VALUES (:uid, :total)");
+                $stmtPedido->execute([':uid' => $id_usuario, ':total' => $total_pedido]);
+
+                $pdo->commit();
+
+                echo "<strong>Compra realizada con éxito</strong><br>";
+                echo "Producto: {$producto['nombre']}<br>";
+                echo "Cantidad: $cantidad_compra<br>";
+                echo "Total pagado: $total_pedido €<br>";
+                echo "Nuevo Stock: " . ($producto['stock'] - $cantidad_compra);
+
+            } catch (Exception $e) {
+                $pdo->rollBack();
+                echo "<p> Error en la transacción: " . $e->getMessage() . "</p>";
             }
 
-            // PASO 3: Mostrar resultados filtrando los eliminados
-            echo "<h3>Listado de Productos Activos</h3>";
+            // EJERCICIO 8
+            echo "<h2>EJERCICIO 8: Reportes SQL Avanzados</h2>";
 
-            // IMPORTANTE: Ahora todas tus consultas deben llevar "WHERE eliminado = 0"
-            $sql = "SELECT * FROM productos WHERE eliminado = 0";
+            // creo la tabla de detalles de pedidos
+            $pdo->exec("
+                CREATE TABLE IF NOT EXISTS detalles_pedidos (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    pedido_id INT,
+                    producto_id INT,
+                    cantidad INT NOT NULL,
+                    precio_unitario DECIMAL(10,2) NOT NULL,
+                    FOREIGN KEY (pedido_id) REFERENCES pedidos(id),
+                    FOREIGN KEY (producto_id) REFERENCES productos(id)
+                )
+            ");
+
+            // voy a meter unos cuantos datos para probar (esto lo he hecho con IA pero mas o menos lo pillo)
+            $count = $pdo->query("SELECT COUNT(*) FROM detalles_pedidos")->fetchColumn();
+            if ($count == 0) {
+                $pdo->exec("INSERT IGNORE INTO pedidos (usuario_id, total) VALUES (1, 50.00)");
+                $lastPedido = $pdo->lastInsertId();
+
+                $pdo->exec("
+                    INSERT INTO detalles_pedidos (pedido_id, producto_id, cantidad, precio_unitario) VALUES 
+                    ($lastPedido, 1, 5, 0.50),  -- 5 Naranjas
+                    ($lastPedido, 2, 2, 1.20),  -- 2 Fresas
+                    ($lastPedido, 1, 3, 0.50)   -- 3 Naranjas más
+                ");
+            }
+
+            // a) calculo los productos mas vendidos
+            echo "<h3>a) Top Productos Más Vendidos</h3>";
+            $sql = "SELECT p.nombre, SUM(dp.cantidad) as total_vendido 
+                    FROM detalles_pedidos dp
+                    JOIN productos p ON dp.producto_id = p.id
+                    GROUP BY p.id 
+                    ORDER BY total_vendido DESC";
 
             $stmt = $pdo->query($sql);
-            $productos_activos = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            if (count($productos_activos) > 0) {
-                foreach ($productos_activos as $p) {
-                    echo "✅ {$p['nombre']} - Stock: {$p['stock']}<br>";
-                }
-            } else {
-                echo "No hay productos activos.";
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $fila) {
+                echo "{$fila['nombre']}: {$fila['total_vendido']} unidades<br>";
             }
+
+            // b) calculo los ingresos por categoria
+            echo "<h3>b) Ingresos Totales por Categoría</h3>";
+            $sql = "SELECT c.nombre, SUM(dp.cantidad * dp.precio_unitario) as total_ingresos
+                    FROM detalles_pedidos dp
+                    JOIN productos p ON dp.producto_id = p.id
+                    JOIN categorias c ON p.categoria_id = c.id
+                    GROUP BY c.id
+                    ORDER BY total_ingresos DESC";
+
+            $stmt = $pdo->query($sql);
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $fila) {
+                echo "{$fila['nombre']}: {$fila['total_ingresos']} €<br>";
+            }
+
+            // c) muestro los productos con bajo stock o los eliminados
+            echo "<h3>c) Alerta de Stock Bajo (< 10)</h3>";
+            $sql = "SELECT nombre, stock FROM productos 
+                    WHERE stock < 10 
+                    ORDER BY stock ASC";
+
+            $stmt = $pdo->query($sql);
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $fila) {
+                echo "<span> {$fila['nombre']} (Quedan: {$fila['stock']})</span><br>";
+            }
+
+            // d) usuario con mas compras
+            echo "<h3>d) Mejores Clientes (Más pedidos)</h3>";
+            $sql = "SELECT u.nombre, COUNT(p.id) as num_pedidos 
+                    FROM pedidos p
+                    JOIN usuarios u ON p.usuario_id = u.id
+                    GROUP BY u.id 
+                    ORDER BY num_pedidos DESC";
+
+            $stmt = $pdo->query($sql);
+            foreach ($stmt->fetchAll(PDO::FETCH_ASSOC) as $fila) {
+                echo "{$fila['nombre']}: {$fila['num_pedidos']} pedidos<br>";
+            }
+
 
         } catch (PDOException $e) {
             echo "<p class='error'>❌ Error de conexión: " . $e->getMessage() . "</p>";
